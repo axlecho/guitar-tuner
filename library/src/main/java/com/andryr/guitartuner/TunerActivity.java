@@ -181,7 +181,7 @@ public class TunerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Utils.setupActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_tuner);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
 
@@ -227,8 +227,7 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
+        if(item.getItemId() == R.id.action_settings) {
                 NavUtils.showSettingsActivity(this);
                 return true;
         }
