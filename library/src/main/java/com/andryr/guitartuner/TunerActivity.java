@@ -58,67 +58,23 @@ public class TunerActivity extends AppCompatActivity {
     private int mPitchIndex;
     private float mLastFreq;
 
+    private void updateView() {
+        mNeedleView = (NeedleView) findViewById(R.id.pitch_needle_view);
+        mNeedleView.setTickLabel(-1.0F, "-100c");
+        mNeedleView.setTickLabel(0.0F, String.format("%.02fHz", mTuning.pitches[0].frequency));
+        mNeedleView.setTickLabel(1.0F, "+100c");
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
-            startAudioProcessing();
-        }
-    }
+        int primaryTextColor = Utils.getAttrColor(this, android.R.attr.textColorPrimary);
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mProcessing) {
-            mAudioProcessor.stop();
-            mProcessing = false;
-        }
-    }
+        mTuningView = (TuningView) findViewById(R.id.tuning_view);
+        mTuningView.setTuning(mTuning);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
 
-    private void requestPermissions() {
-        if (!Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
+        mFrequencyView = (TextView) findViewById(R.id.frequency_view);
+        mFrequencyView.setText(String.format("%.02fHz", mTuning.pitches[0].frequency));
 
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.RECORD_AUDIO)) {
-
-                DialogUtils.showPermissionDialog(this, getString(R.string.permission_record_audio), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ActivityCompat.requestPermissions(TunerActivity.this,
-                                new String[]{Manifest.permission.RECORD_AUDIO},
-                                PERMISSION_REQUEST_RECORD_AUDIO);
-                    }
-                });
-
-            } else {
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        PERMISSION_REQUEST_RECORD_AUDIO);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_RECORD_AUDIO: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startAudioProcessing();
-                }
-                break;
-            }
-
-        }
+        ImageView goodPitchView = (ImageView) findViewById(R.id.good_pitch_view);
+        goodPitchView.setColorFilter(primaryTextColor);
     }
 
     private void startAudioProcessing() {
@@ -169,7 +125,69 @@ public class TunerActivity extends AppCompatActivity {
         mExecutor.execute(mAudioProcessor);
     }
 
+    private void requestPermissions() {
+        if (!Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
 
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.RECORD_AUDIO)) {
+
+                DialogUtils.showPermissionDialog(this, getString(R.string.permission_record_audio), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(TunerActivity.this,
+                                new String[]{Manifest.permission.RECORD_AUDIO},
+                                PERMISSION_REQUEST_RECORD_AUDIO);
+                    }
+                });
+
+            } else {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        PERMISSION_REQUEST_RECORD_AUDIO);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_RECORD_AUDIO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startAudioProcessing();
+                }
+                break;
+            }
+
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
+            startAudioProcessing();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mProcessing) {
+            mAudioProcessor.stop();
+            mProcessing = false;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
+        this.updateView();
+        super.onResume();
+    }
 
     @Override
     protected void onPause() {
@@ -179,30 +197,12 @@ public class TunerActivity extends AppCompatActivity {
     @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Utils.setupActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tuner);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
-
-        mNeedleView = (NeedleView) findViewById(R.id.pitch_needle_view);
-        mNeedleView.setTickLabel(-1.0F, "-100c");
-        mNeedleView.setTickLabel(0.0F, String.format("%.02fHz", mTuning.pitches[0].frequency));
-        mNeedleView.setTickLabel(1.0F, "+100c");
-
-        int primaryTextColor = Utils.getAttrColor(this, android.R.attr.textColorPrimary);
-
-        mTuningView = (TuningView) findViewById(R.id.tuning_view);
-        mTuningView.setTuning(mTuning);
-
-
-        mFrequencyView = (TextView) findViewById(R.id.frequency_view);
-        mFrequencyView.setText(String.format("%.02fHz", mTuning.pitches[0].frequency));
-
-        ImageView goodPitchView = (ImageView) findViewById(R.id.good_pitch_view);
-        goodPitchView.setColorFilter(primaryTextColor);
+        this.updateView();
         requestPermissions();
-
     }
 
     @Override
@@ -223,7 +223,6 @@ public class TunerActivity extends AppCompatActivity {
         mTuningView.setSelectedIndex(pitchIndex);
         mFrequencyView.setText(String.format("%.02fHz", savedInstanceState.getFloat(STATE_LAST_FREQ)));
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

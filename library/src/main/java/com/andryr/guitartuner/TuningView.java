@@ -56,7 +56,7 @@ public class TuningView extends View {
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
         final TypedArray array = context.obtainStyledAttributes(attrs,
                 R.styleable.TuningView, defStyleAttr,
-                R.style.LightTuningView);
+                R.style.TunerLightTuningView);
         mNormalTextColor = array.getColor(R.styleable.TuningView_normalTextColor, 0);
         mSelectedTextColor = array.getColor(R.styleable.TuningView_selectedTextColor, 0);
         float textSize = array.getDimension(R.styleable.TuningView_textSize, 0);

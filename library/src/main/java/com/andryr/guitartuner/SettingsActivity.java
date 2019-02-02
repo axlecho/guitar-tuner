@@ -30,27 +30,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     private boolean mShouldRestart = false;
 
-    private SharedPreferences.OnSharedPreferenceChangeListener mOnPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if(key.equals(getString(R.string.pref_tuning_key)) || key.equals(getString(R.string.pref_dark_theme_key))) {
-                mShouldRestart = true;
-            }
-        }
-    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
         addPreferencesFromResource(R.xml.preferences);
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(mOnPreferenceChangeListener);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mOnPreferenceChangeListener);
     }
 
     private void setupActionBar() {

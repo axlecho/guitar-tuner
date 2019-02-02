@@ -15,12 +15,9 @@
   -->
 
 <resources>
-    <string name="app_name">Guitar Tuner</string>
+    <string name="title_activity_tuner">Guitar Tuner</string>
     <string name="title_activity_settings">Settings</string>
 
-
-    <string name="pref_dark_theme_key" translatable="false">pref_dark_theme</string>
-    <string name="pref_dark_theme_title">Dark theme</string>
     <string name="pref_tuning_key" translatable="false">pref_tuning</string>
     <string name="pref_tuning_title">Tuning</string>
 

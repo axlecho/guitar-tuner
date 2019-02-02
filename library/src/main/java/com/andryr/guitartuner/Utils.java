@@ -126,15 +126,6 @@ public class Utils {
         }
     }
 
-    public static void setupActivityTheme(Activity activity) {
-        boolean dark = Preferences.getBoolean(activity, activity.getString(R.string.pref_dark_theme_key), false);
-        if (dark) {
-            activity.setTheme(R.style.AppThemeDark);
-        } else {
-            activity.setTheme(R.style.AppThemeLight);
-        }
-    }
-
     public static boolean checkPermission(Context context, String permission) {
         return ContextCompat.checkSelfPermission(context,
                 permission) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.M;

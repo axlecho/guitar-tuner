@@ -79,7 +79,7 @@ public class NeedleView extends View {
 
         final TypedArray array = context.obtainStyledAttributes( attrs,
                 R.styleable.NeedleView, defStyleAttr,
-                R.style.LightNeedleView);
+                R.style.TunerLightNeedleView);
         mNeedleColor = array.getColor(R.styleable.NeedleView_needleColor, 0);
         mSmallTicksColor = array.getColor(R.styleable.NeedleView_smallTicksColor, 0);
         mBigTicksColor = array.getColor(R.styleable.NeedleView_bigTicksColor, 0);

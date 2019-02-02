@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.andryr.guitartuner"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.andryr.guitartuner">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:supportsRtl="true">
-        <activity android:name=".TunerActivity"/>
+    <application>
+        <activity
+            android:name=".TunerActivity"
+            android:label="@string/title_activity_tuner"
+            android:theme="@style/TunerAppThemeLight" />
         <activity
             android:name=".SettingsActivity"
-            android:parentActivityName=".TunerActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".TunerActivity"/>
-        </activity>
+            android:label="@string/action_settings"
+            android:theme="@style/TunerAppThemeLight" />
     </application>
 
 </manifest>
