@@ -52,6 +52,7 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="@dimen/pitch_name_text_size"/>
     </LinearLayout>
+
     <ImageView
         android:id="@+id/good_pitch_view"
         android:src="@drawable/ic_check"
