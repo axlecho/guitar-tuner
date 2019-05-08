@@ -79,8 +79,7 @@ public class Utils {
             float finalRadius = (float) Math.hypot(cx, cy);
 
             // create the animator for this view (the start radius is zero)
-            Animator anim =
-                    ViewAnimationUtils.createCircularReveal(view, cx, cy, 0, finalRadius);
+            Animator anim = ViewAnimationUtils.createCircularReveal(view, cx, cy, 0, finalRadius);
 
             // make the view visible and start the animation
             view.setVisibility(View.VISIBLE);

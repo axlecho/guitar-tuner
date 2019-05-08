@@ -45,12 +45,12 @@ public class Tuning {
         return closest;
     }
 
-    public int closestPitchIndex(float freq) {
+    public int closestPitchIndex(double freq) {
         int index = -1;
-        float dist = Float.MAX_VALUE;
+        double dist = Float.MAX_VALUE;
         for (int i = 0; i < pitches.length; i++) {
             Pitch pitch = pitches[i];
-            float d = Math.abs(freq - pitch.frequency);
+            double d = Math.abs(freq - pitch.frequency);
             if (d < dist) {
                 index = i;
                 dist = d;

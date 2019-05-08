@@ -21,10 +21,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,9 +29,18 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.pitch.PitchDetectionHandler;
+import be.tarsos.dsp.pitch.PitchDetectionResult;
+import be.tarsos.dsp.pitch.PitchProcessor;
+
+@SuppressWarnings("DefaultLocale")
 public class TunerActivity extends AppCompatActivity {
 
     private static final String TAG = TunerActivity.class.getCanonicalName();
@@ -47,82 +52,76 @@ public class TunerActivity extends AppCompatActivity {
 
 
     private Tuning mTuning;
-    private AudioProcessor mAudioProcessor;
-    private ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private NeedleView mNeedleView;
     private TuningView mTuningView;
     private TextView mFrequencyView;
-
-    private boolean mProcessing = false;
+    private ImageView mGoodPitchView;
 
     private int mPitchIndex;
-    private float mLastFreq;
+    private double mLastFreq;
+
+    private AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0);
 
     private void updateView() {
-        mNeedleView = (NeedleView) findViewById(R.id.pitch_needle_view);
+        mNeedleView =  findViewById(R.id.pitch_needle_view);
         mNeedleView.setTickLabel(-1.0F, "-100c");
         mNeedleView.setTickLabel(0.0F, String.format("%.02fHz", mTuning.pitches[0].frequency));
         mNeedleView.setTickLabel(1.0F, "+100c");
 
-        int primaryTextColor = Utils.getAttrColor(this, android.R.attr.textColorPrimary);
-
-        mTuningView = (TuningView) findViewById(R.id.tuning_view);
+        mTuningView =  findViewById(R.id.tuning_view);
         mTuningView.setTuning(mTuning);
 
-
-        mFrequencyView = (TextView) findViewById(R.id.frequency_view);
+        mFrequencyView = findViewById(R.id.frequency_view);
         mFrequencyView.setText(String.format("%.02fHz", mTuning.pitches[0].frequency));
 
-        ImageView goodPitchView = (ImageView) findViewById(R.id.good_pitch_view);
-        goodPitchView.setColorFilter(primaryTextColor);
+        int primaryTextColor = Utils.getAttrColor(this, android.R.attr.textColorPrimary);
+        mGoodPitchView = findViewById(R.id.good_pitch_view);
+        mGoodPitchView.setColorFilter(primaryTextColor);
+    }
+
+    private void updateUI(float freq) {
+        final int index = mTuning.closestPitchIndex(freq);
+        final Pitch pitch = mTuning.pitches[index];
+        double interval = 1200 * Utils.log2(freq / pitch.frequency); // interval in cents
+        final float needlePos = (float) (interval / 100);
+        final boolean goodPitch = Math.abs(interval) < 5.0;
+
+        mTuningView.setSelectedIndex(index, true);
+        mNeedleView.setTickLabel(0.0F, String.format("%.02fHz", pitch.frequency));
+        mNeedleView.animateTip(needlePos);
+        mFrequencyView.setText(String.format("%.02fHz", freq));
+
+
+        if (goodPitch) {
+            if (mGoodPitchView.getVisibility() != View.VISIBLE) {
+                Utils.reveal(mGoodPitchView);
+            }
+        } else if (mGoodPitchView.getVisibility() == View.VISIBLE) {
+            Utils.hide(mGoodPitchView);
+        }
+
+        mPitchIndex = index;
+        mLastFreq = freq;
     }
 
     private void startAudioProcessing() {
-        if (mProcessing)
-            return;
-
-
-        mAudioProcessor = new AudioProcessor();
-        mAudioProcessor.init();
-        mAudioProcessor.setPitchDetectionListener(new AudioProcessor.PitchDetectionListener() {
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, new PitchDetectionHandler() {
             @Override
-            public void onPitchDetected(final float freq, double avgIntensity) {
+            public void handlePitch(PitchDetectionResult pitchDetectionResult, AudioEvent audioEvent) {
+                final float pitchInHz = pitchDetectionResult.getPitch();
 
-                final int index = mTuning.closestPitchIndex(freq);
-                final Pitch pitch = mTuning.pitches[index];
-                double interval = 1200 * Utils.log2(freq / pitch.frequency); // interval in cents
-                final float needlePos = (float) (interval / 100);
-                final boolean goodPitch = Math.abs(interval) < 5.0;
                 runOnUiThread(new Runnable() {
-                    @SuppressLint("DefaultLocale")
                     @Override
                     public void run() {
-                        mTuningView.setSelectedIndex(index, true);
-                        mNeedleView.setTickLabel(0.0F, String.format("%.02fHz", pitch.frequency));
-                        mNeedleView.animateTip(needlePos);
-                        mFrequencyView.setText(String.format("%.02fHz", freq));
-
-
-                        final View goodPitchView = findViewById(R.id.good_pitch_view);
-                        if (goodPitchView != null) {
-                            if (goodPitch) {
-                                if (goodPitchView.getVisibility() != View.VISIBLE) {
-                                    Utils.reveal(goodPitchView);
-                                }
-                            } else if (goodPitchView.getVisibility() == View.VISIBLE) {
-                                Utils.hide(goodPitchView);
-                            }
+                        if(pitchInHz > 0) {
+                            updateUI(pitchInHz);
                         }
                     }
                 });
-
-                mPitchIndex = index;
-                mLastFreq = freq;
-
             }
-        });
-        mProcessing = true;
-        mExecutor.execute(mAudioProcessor);
+        }));
+
+        new Thread(dispatcher, "Audio Dispatcher").start();
     }
 
     private void requestPermissions() {
@@ -166,35 +165,21 @@ public class TunerActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        if(Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
-            startAudioProcessing();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mProcessing) {
-            mAudioProcessor.stop();
-            mProcessing = false;
-        }
-    }
-
-    @Override
     protected void onResume() {
         mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
         this.updateView();
+        if (Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
+            startAudioProcessing();
+        }
         super.onResume();
     }
 
     @Override
     protected void onPause() {
+        dispatcher.stop();
         super.onPause();
     }
 
-    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -209,7 +194,7 @@ public class TunerActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         outState.putFloat(STATE_NEEDLE_POS, mNeedleView.getTipPos());
         outState.putInt(STATE_PITCH_INDEX, mPitchIndex);
-        outState.putFloat(STATE_LAST_FREQ, mLastFreq);
+        outState.putDouble(STATE_LAST_FREQ, mLastFreq);
         super.onSaveInstanceState(outState);
     }
 
@@ -226,9 +211,9 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.action_tuner_settings) {
-                NavUtils.showSettingsActivity(this);
-                return true;
+        if (item.getItemId() == R.id.action_tuner_settings) {
+            NavUtils.showSettingsActivity(this);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
