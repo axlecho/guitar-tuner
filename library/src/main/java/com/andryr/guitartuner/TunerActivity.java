@@ -60,7 +60,7 @@ public class TunerActivity extends AppCompatActivity {
     private int mPitchIndex;
     private double mLastFreq;
 
-    private AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0);
+    private AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 0);
 
     private void updateView() {
         mNeedleView =  findViewById(R.id.pitch_needle_view);
@@ -105,11 +105,10 @@ public class TunerActivity extends AppCompatActivity {
     }
 
     private void startAudioProcessing() {
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, new PitchDetectionHandler() {
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult, AudioEvent audioEvent) {
                 final float pitchInHz = pitchDetectionResult.getPitch();
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
