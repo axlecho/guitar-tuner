@@ -81,7 +81,7 @@ public class TunerActivity extends AppCompatActivity {
 
     private void updateUI(float freq) {
         final int index = mTuning.closestPitchIndex(freq);
-        final Pitch pitch = mTuning.pitches[index];
+        final Notes.Pitch pitch = mTuning.pitches[index];
         double interval = 1200 * Utils.log2(freq / pitch.frequency); // interval in cents
         final float needlePos = (float) (interval / 100);
         final boolean goodPitch = Math.abs(interval) < 5.0;
@@ -165,8 +165,6 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
-        this.updateView();
         if (Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
             startAudioProcessing();
         }
@@ -175,7 +173,9 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        dispatcher.stop();
+        if(!dispatcher.isStopped()) {
+            dispatcher.stop();
+        }
         super.onPause();
     }
 
@@ -184,7 +184,7 @@ public class TunerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tuner);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.standard_tuning_val)));
+        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.common)));
         this.updateView();
         requestPermissions();
     }

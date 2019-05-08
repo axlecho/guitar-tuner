@@ -51,9 +51,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            if (!super.onMenuItemSelected(featureId, item)) {
-                NavUtils.navigateUpFromSameTask(this);
-            }
+            finish();
             return true;
         }
         return super.onMenuItemSelected(featureId, item);
@@ -61,14 +59,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     public void onBackPressed() {
-        if (mShouldRestart) {
-            Intent i = getPackageManager()
-                    .getLaunchIntentForPackage(getPackageName());
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
-        }
-        else {
-            super.onBackPressed();
-        }
+        finish();
     }
 }

@@ -19,12 +19,4 @@ package com.andryr.guitartuner;
 /**
  * Created by andry on 24/04/16.
  */
-public class Pitch {
-    float frequency;
-    String name;
 
-    public Pitch(float frequency, String name) {
-        this.frequency = frequency;
-        this.name = name;
-    }
-}

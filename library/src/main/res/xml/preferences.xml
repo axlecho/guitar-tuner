@@ -19,7 +19,7 @@
     <ListPreference
         android:defaultValue="@string/standard_tuning"
         android:entries="@array/pref_tuning_entries"
-        android:entryValues="@array/pref_tuning_values"
+        android:entryValues="@array/pref_tuning_entries"
         android:key="@string/pref_tuning_key"
         android:title="@string/pref_tuning_title"
         android:summary="%s"/>

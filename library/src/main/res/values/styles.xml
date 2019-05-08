@@ -35,7 +35,7 @@
 
     <style name="TunerLightTuningView">
         <item name="normalTextColor">@android:color/secondary_text_light</item>
-        <item name="selectedTextColor">@android:color/primary_text_light</item>
+        <item name="selectedTextColor">@android:color/holo_red_dark</item>
         <item name="textSize">@dimen/tuning_view_text_size</item>
         <item name="itemWidth">@dimen/tuning_view_item_width</item>
     </style>

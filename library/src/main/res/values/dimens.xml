@@ -25,6 +25,6 @@
     <dimen name="pitch_name_text_size">32sp</dimen>
     <dimen name="needle_view_tick_label_text_size">16sp</dimen>
 
-    <dimen name="tuning_view_text_size">32sp</dimen>
-    <dimen name="tuning_view_item_width">48dp</dimen>
+    <dimen name="tuning_view_text_size">24sp</dimen>
+    <dimen name="tuning_view_item_width">60dp</dimen>
 </resources>

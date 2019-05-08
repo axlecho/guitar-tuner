@@ -19,24 +19,25 @@ package com.andryr.guitartuner;
 import android.content.Context;
 
 import java.lang.ref.PhantomReference;
+import java.util.ArrayList;
 
 /**
  * Created by andry on 24/04/16.
  */
 public class Tuning {
     String name;
-    Pitch[] pitches;
+    Notes.Pitch[] pitches;
 
-    public Tuning(String name, Pitch[] pitches) {
+    public Tuning(String name, Notes.Pitch[] pitches) {
         this.name = name;
         this.pitches = pitches;
     }
 
-    public Pitch closestPitch(float freq) {
-        Pitch closest = null;
-        float dist = Float.MAX_VALUE;
-        for (Pitch pitch : pitches) {
-            float d = Math.abs(freq - pitch.frequency);
+    public Notes.Pitch closestPitch(double freq) {
+        Notes.Pitch closest = null;
+        double dist = Double.MAX_VALUE;
+        for (Notes.Pitch pitch : pitches) {
+            double d = Math.abs(freq - pitch.frequency);
             if (d < dist) {
                 closest = pitch;
                 dist = d;
@@ -47,9 +48,9 @@ public class Tuning {
 
     public int closestPitchIndex(double freq) {
         int index = -1;
-        double dist = Float.MAX_VALUE;
+        double dist = Double.MAX_VALUE;
         for (int i = 0; i < pitches.length; i++) {
-            Pitch pitch = pitches[i];
+            Notes.Pitch pitch = pitches[i];
             double d = Math.abs(freq - pitch.frequency);
             if (d < dist) {
                 index = i;
@@ -59,62 +60,20 @@ public class Tuning {
         return index;
     }
 
+    private static String[] STANDARD_TUNING = {"E-3","A-3","D-4","G-4","B-4","E-5"};
+    private static String[] OPEN_A_TUNING = {"E-3","A-3","E-4","A-4","C-5","E-5"};
+    private static Notes.Pitch[] getPitches(String[] name) {
+        ArrayList<Notes.Pitch> result = new ArrayList<>();
+        for(String key :name) {
+            result.add(Notes.getInstance().get(key));
+        }
+        return result.toArray(new Notes.Pitch[0]);
+    }
+
     public static Tuning getTuning(Context context, String name) {
-        if (name.equals(context.getString(R.string.standard_tuning_val))) {
-            return new Tuning(name,
-                    new Pitch[]{
-                            new Pitch(82.41F, "E"),
-                            new Pitch(110.00F, "A"),
-                            new Pitch(146.83F, "D"),
-                            new Pitch(196.00F, "G"),
-                            new Pitch(246.94F, "B"),
-                            new Pitch(329.63F, "E"),
-                    });
-        }
-        else if (name.equals(context.getString(R.string.open_a_tuning_val))) {
-            return new Tuning(name,
-                    new Pitch[]{
-                            new Pitch(82.41F, "E"),
-                            new Pitch(110.00F, "A"),
-                            new Pitch(164.81F, "E"),
-                            new Pitch(220.00F, "A"),
-                            new Pitch(277.18F, "C"),
-                            new Pitch(329.63F, "E"),
-                    });
-        }
-        else if (name.equals(context.getString(R.string.open_g_tuning_val))) {
-            return new Tuning(name,
-                    new Pitch[]{
-                            new Pitch(73.42F, "D"),
-                            new Pitch(98.00F, "G"),
-                            new Pitch(146.83F, "D"),
-                            new Pitch(196.00F, "G"),
-                            new Pitch(246.94F, "B"),
-                            new Pitch(293.66F, "D"),
-                    });
-        }
-        else if (name.equals(context.getString(R.string.open_d_tuning_val))) {
-            return new Tuning(name,
-                    new Pitch[]{
-                            new Pitch(73.42F, "D"),
-                            new Pitch(110.00F, "A"),
-                            new Pitch(146.83F, "D"),
-                            new Pitch(185.00F, "F"),
-                            new Pitch(220.00F, "A"),
-                            new Pitch(293.66F, "D"),
-                    });
-        }
-        else if (name.equals(context.getString(R.string.drop_d_tuning_val))) {
-            return new Tuning(name,
-                    new Pitch[]{
-                            new Pitch(73.42F, "D"),
-                            new Pitch(110.00F, "A"),
-                            new Pitch(146.83F, "D"),
-                            new Pitch(196.00F, "G"),
-                            new Pitch(246.94F, "B"),
-                            new Pitch(329.63F, "E"),
-                    });
-        }
+        if(name.equals(context.getString(R.string.common))) return new Tuning(name,Notes.getInstance().getAllTuning());
+        else if (name.equals(context.getString(R.string.standard_tuning))) return new Tuning(name,getPitches(STANDARD_TUNING));
+        else if (name.equals(context.getString(R.string.open_a_tuning))) return new Tuning(name,getPitches(OPEN_A_TUNING));
         return null;
     }
 
