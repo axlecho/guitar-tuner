@@ -62,6 +62,7 @@ public class Tuning {
 
     private static String[] STANDARD_TUNING = {"E-3","A-3","D-4","G-4","B-4","E-5"};
     private static String[] OPEN_A_TUNING = {"E-3","A-3","E-4","A-4","C-5","E-5"};
+
     private static Notes.Pitch[] getPitches(String[] name) {
         ArrayList<Notes.Pitch> result = new ArrayList<>();
         for(String key :name) {

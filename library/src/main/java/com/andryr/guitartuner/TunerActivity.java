@@ -19,6 +19,7 @@ package com.andryr.guitartuner;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
@@ -60,7 +61,7 @@ public class TunerActivity extends AppCompatActivity {
     private int mPitchIndex;
     private double mLastFreq;
 
-    private AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 0);
+    private AudioDispatcher dispatcher;
 
     private void updateView() {
         mNeedleView =  findViewById(R.id.pitch_needle_view);
@@ -105,6 +106,10 @@ public class TunerActivity extends AppCompatActivity {
     }
 
     private void startAudioProcessing() {
+        if(dispatcher == null) {
+            dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 0);
+        }
+
         dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult, AudioEvent audioEvent) {
@@ -119,7 +124,6 @@ public class TunerActivity extends AppCompatActivity {
                 });
             }
         }));
-
         new Thread(dispatcher, "Audio Dispatcher").start();
     }
 
@@ -156,6 +160,8 @@ public class TunerActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startAudioProcessing();
+                } else {
+                    finish();
                 }
                 break;
             }
@@ -165,6 +171,8 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.common)));
+        this.updateView();
         if (Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO)) {
             startAudioProcessing();
         }
@@ -173,8 +181,9 @@ public class TunerActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        if(!dispatcher.isStopped()) {
+        if(dispatcher!= null && !dispatcher.isStopped()) {
             dispatcher.stop();
+            dispatcher = null;
         }
         super.onPause();
     }
@@ -184,8 +193,6 @@ public class TunerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tuner);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mTuning = Tuning.getTuning(this, Preferences.getString(this, getString(R.string.pref_tuning_key), getString(R.string.common)));
-        this.updateView();
         requestPermissions();
     }
 
@@ -211,7 +218,8 @@ public class TunerActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_tuner_settings) {
-            NavUtils.showSettingsActivity(this);
+            Intent intent = new Intent(this, SettingsActivity.class);
+            this.startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
